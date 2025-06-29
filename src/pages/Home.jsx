@@ -31,7 +31,7 @@ function Home() {
       transition={{ duration: 0.5 }}
       className="container mx-auto p-6 text-center"
     >
-      <h2 className="text-4xl font-bold text-tech-neon mb-6">Welcome to College Startup Platform</h2>
+      <h2 className="text-4xl font-bold text-tech-neon mb-6">Welcome to IgniteVault</h2>
       <p className="text-tech-light text-lg max-w-2xl mx-auto mb-8">
         Collaborate, Innovate, Succeed. Join college students to build startups, participate in hackathons, and connect with investors.
       </p>

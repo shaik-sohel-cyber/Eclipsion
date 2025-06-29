@@ -1,72 +1,89 @@
 import { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { motion } from 'framer-motion';
+import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { motion } from 'framer-motion';
 
 function Sidebar() {
-  const [isOpen, setIsOpen] = useState(false);
   const { user, logout } = useAuth();
-  const navigate = useNavigate();
+  const [isOpen, setIsOpen] = useState(false);
 
   const handleLogout = async () => {
     try {
-      console.log("Sidebar: Logging out...");
+      console.log('Sidebar: Logging out');
       await logout();
-      navigate('/login');
+      setIsOpen(false);
     } catch (err) {
-      console.error("Sidebar: Logout error:", err.message);
+      console.error('Sidebar: Logout error:', err.message);
     }
   };
 
+  const sidebarVariants = {
+    open: { x: 0 },
+    closed: { x: '-100%' },
+  };
+
+  const isAuthenticated = user && user.emailVerified;
+
   return (
-    <motion.div
-      initial={{ width: isOpen ? 256 : 64 }}
-      animate={{ width: isOpen ? 256 : 64 }}
+    <motion.aside
+      initial="closed"
+      animate={isOpen ? 'open' : 'closed'}
+      variants={sidebarVariants}
       transition={{ duration: 0.3 }}
-      className="bg-tech-gray text-tech-light h-screen shadow-lg border-r border-tech-neon/20"
+      className="bg-tech-dark w-64 h-screen border-r border-tech-neon/20 fixed md:static z-10"
     >
-      <button
-        onClick={() => setIsOpen(!isOpen)}
-        className="p-4 w-full text-left hover:bg-tech-blue/50 transition"
-        aria-label="Toggle sidebar"
-      >
-        {isOpen ? 'Close' : '☰'}
-      </button>
-      {isOpen && (
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 0.3 }}
-          className="p-4 space-y-4"
+      <div className="p-4">
+        <button
+          className="md:hidden text-tech-light mb-4 focus:outline-none"
+          onClick={() => setIsOpen(!isOpen)}
+          aria-label="Toggle sidebar"
         >
-          <Link to="/" className="block hover:text-tech-neon transition">Home</Link>
-          <Link to="/projects" className="block hover:text-tech-neon transition">Projects</Link>
-          <Link to="/hackathons" className="block hover:text-tech-neon transition">Hackathons</Link>
-          <Link to="/prototypes" className="block hover:text-tech-neon transition">Prototypes</Link>
-          <Link to="/courses" className="block hover:text-tech-neon transition">Courses</Link>
-          {user ? (
+          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth="2"
+              d={isOpen ? 'M6 18L18 6M6 6l12 12' : 'M4 6h16M4 12h16M4 18h16'}
+            />
+          </svg>
+        </button>
+        <div className="space-y-4">
+          <Link to="/dashboard" className="block text-tech-light hover:text-tech-neon">
+            Dashboard
+          </Link>
+          <Link to="/projects" className="block text-tech-light hover:text-tech-neon">
+            Projects
+          </Link>
+          <Link to="/hackathons" className="block text-tech-light hover:text-tech-neon">
+            Hackathons
+          </Link>
+          <Link to="/prototypes" className="block text-tech-light hover:text-tech-neon">
+            Prototypes
+          </Link>
+          <Link to="/courses" className="block text-tech-light hover:text-tech-neon">
+            Courses
+          </Link>
+          {isAuthenticated ? (
             <>
-              <Link to="/profile" className="block hover:text-tech-neon transition">Profile</Link>
-              <motion.button
-                whileHover={{ scale: 1.05, boxShadow: '0 0 10px rgba(0, 229, 255, 0.5)' }}
-                whileTap={{ scale: 0.95 }}
+              <Link to="/profile" className="block text-tech-light hover:text-tech-neon">
+                Profile
+              </Link>
+              <button
                 onClick={handleLogout}
-                className="bg-tech-blue text-white rounded-lg p-2 w-full font-semibold hover:bg-blue-700 transition"
+                className="block text-tech-light hover:text-red-500"
                 aria-label="Logout"
               >
                 Logout
-              </motion.button>
+              </button>
             </>
           ) : (
-            <>
-              <Link to="/login" className="block hover:text-tech-neon transition">Login</Link>
-              <Link to="/signup" className="block hover:text-tech-neon transition">Sign Up</Link>
-              <Link to="/reset-password" className="block hover:text-tech-neon transition">Reset Password</Link>
-            </>
+            <Link to="/login" className="block text-tech-light hover:text-tech-neon">
+              Login
+            </Link>
           )}
-        </motion.div>
-      )}
-    </motion.div>
+        </div>
+      </div>
+    </motion.aside>
   );
 }
 
