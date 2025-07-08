@@ -8,13 +8,14 @@ import { useAuth } from '../context/AuthContext';
 function ProjectCreate() {
   const { user } = useAuth();
   const navigate = useNavigate();
+
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [domain, setDomain] = useState('');
   const [duration, setDuration] = useState('');
   const [skills, setSkills] = useState('');
   const [stage, setStage] = useState('idea');
-  const [imageUrl, setImageUrl] = useState(''); // New field for image URL
+  const [imageUrl, setImageUrl] = useState('');
   const [error, setError] = useState('');
 
   const handleSubmit = async (e) => {
@@ -32,8 +33,8 @@ function ProjectCreate() {
         domain,
         duration: parseInt(duration) || 0,
         skills: skills.split(',').map(skill => skill.trim()),
-        stage, // Set during creation
-        imageUrl, // Set during creation
+        stage,
+        imageUrl,
         creator: user.uid,
         creatorName: user.displayName || user.email.split('@')[0],
         team: [user.uid],
@@ -57,6 +58,9 @@ function ProjectCreate() {
     }
   };
 
+  const inputClass =
+    'bg-tech-dark border border-tech-light/20 rounded-lg p-3 w-full text-tech-light focus:outline-none focus:ring-2 focus:ring-tech-neon';
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -66,75 +70,101 @@ function ProjectCreate() {
     >
       <h2 className="text-3xl font-bold text-tech-neon mb-6 text-center">Create Project</h2>
       {error && <p className="text-red-500 mb-4 text-center">{error}</p>}
-      <form onSubmit={handleSubmit} className="bg-tech-gray shadow-2xl rounded-lg p-6 border border-tech-neon/20 space-y-4">
-        <input
-          type="text"
-          value={title}
-          onChange={(e) => setTitle(e.target.value)}
-          placeholder="Project Title"
-          className="bg-tech-dark border border-tech-light/20 rounded-lg p-3 w-full text-tech-light focus:outline-none focus:ring-2 focus:ring-tech-neon"
-          required
-          aria-label="Project Title"
-        />
-        <textarea
-          value={description}
-          onChange={(e) => setDescription(e.target.value)}
-          placeholder="Description"
-          className="bg-tech-dark border border-tech-light/20 rounded-lg p-3 w-full text-tech-light focus:outline-none focus:ring-2 focus:ring-tech-neon"
-          required
-          aria-label="Description"
-        />
-        <input
-          type="text"
-          value={domain}
-          onChange={(e) => setDomain(e.target.value)}
-          placeholder="Domain (e.g., AI, Web Dev)"
-          className="bg-tech-dark border border-tech-light/20 rounded-lg p-3 w-full text-tech-light focus:outline-none focus:ring-2 focus:ring-tech-neon"
-          required
-          aria-label="Domain"
-        />
-        <input
-          type="number"
-          value={duration}
-          onChange={(e) => setDuration(e.target.value)}
-          placeholder="Duration (days)"
-          className="bg-tech-dark border border-tech-light/20 rounded-lg p-3 w-full text-tech-light focus:outline-none focus:ring-2 focus:ring-tech-neon"
-          required
-          aria-label="Duration"
-        />
-        <input
-          type="text"
-          value={skills}
-          onChange={(e) => setSkills(e.target.value)}
-          placeholder="Skills (comma-separated)"
-          className="bg-tech-dark border border-tech-light/20 rounded-lg p-3 w-full text-tech-light focus:outline-none focus:ring-2 focus:ring-tech-neon"
-          required
-          aria-label="Skills"
-        />
-        <select
-          value={stage}
-          onChange={(e) => setStage(e.target.value)}
-          className="bg-tech-dark border border-tech-light/20 rounded-lg p-3 w-full text-tech-light focus:outline-none focus:ring-2 focus:ring-tech-neon"
-          aria-label="Project Stage"
-        >
-          <option value="idea">Idea</option>
-          <option value="mvp">MVP</option>
-          <option value="implementation">Implementation</option>
-        </select>
-        <input
-          type="text"
-          value={imageUrl}
-          onChange={(e) => setImageUrl(e.target.value)}
-          placeholder="Image URL (e.g., https://example.com/image.jpg)"
-          className="bg-tech-dark border border-tech-light/20 rounded-lg p-3 w-full text-tech-light focus:outline-none focus:ring-2 focus:ring-tech-neon"
-          aria-label="Image URL"
-        />
+
+      <form
+        onSubmit={handleSubmit}
+        className="bg-tech-gray shadow-2xl rounded-lg p-6 border border-tech-neon/20 space-y-4"
+      >
+        <div>
+          <label htmlFor="title" className="block text-tech-light mb-1">Project Title</label>
+          <input
+            id="title"
+            type="text"
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+            className={inputClass}
+            required
+          />
+        </div>
+
+        <div>
+          <label htmlFor="description" className="block text-tech-light mb-1">Description</label>
+          <textarea
+            id="description"
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
+            className={inputClass}
+            required
+          />
+        </div>
+
+        <div>
+          <label htmlFor="domain" className="block text-tech-light mb-1">Domain</label>
+          <input
+            id="domain"
+            type="text"
+            value={domain}
+            onChange={(e) => setDomain(e.target.value)}
+            className={inputClass}
+            required
+          />
+        </div>
+
+        <div>
+          <label htmlFor="duration" className="block text-tech-light mb-1">Duration (days)</label>
+          <input
+            id="duration"
+            type="number"
+            value={duration}
+            onChange={(e) => setDuration(e.target.value)}
+            className={inputClass}
+            required
+          />
+        </div>
+
+        <div>
+          <label htmlFor="skills" className="block text-tech-light mb-1">Skills (comma-separated)</label>
+          <input
+            id="skills"
+            type="text"
+            value={skills}
+            onChange={(e) => setSkills(e.target.value)}
+            className={inputClass}
+            required
+          />
+        </div>
+
+        <div>
+          <label htmlFor="stage" className="block text-tech-light mb-1">Project Stage</label>
+          <select
+            id="stage"
+            value={stage}
+            onChange={(e) => setStage(e.target.value)}
+            className={inputClass}
+          >
+            <option value="idea">Idea</option>
+            <option value="mvp">MVP</option>
+            <option value="implementation">Implementation</option>
+          </select>
+        </div>
+
+        <div>
+          <label htmlFor="imageUrl" className="block text-tech-light mb-1">Image URL</label>
+          <input
+            id="imageUrl"
+            type="text"
+            value={imageUrl}
+            onChange={(e) => setImageUrl(e.target.value)}
+            className={inputClass}
+            placeholder="https://example.com/image.jpg"
+          />
+        </div>
+
         <motion.button
-          whileHover={{ scale: 1.05, boxShadow: '0 0 10px rgba(0, 229, 255, 0.5)' }}
+          whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
           type="submit"
           className="bg-tech-blue text-white rounded-lg p-3 w-full font-semibold hover:bg-blue-700 transition"
-          aria-label="Create Project"
         >
           Create Project
         </motion.button>

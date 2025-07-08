@@ -1,123 +1,100 @@
-import { useState } from 'react';
-import { Link } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
+import { Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
+import { useAuth } from '../context/AuthContext';
+import { useState, useRef } from 'react';
 
 function Navbar() {
   const { user, logout } = useAuth();
-  const [isOpen, setIsOpen] = useState(false);
+  const navigate = useNavigate();
+  const [isProfileOpen, setIsProfileOpen] = useState(false);
+  const timeoutRef = useRef(null);
 
   const handleLogout = async () => {
     try {
-      console.log('Navbar: Logging out');
+      console.log("Navbar: Logging out...");
       await logout();
-      setIsOpen(false);
+      navigate('/login');
     } catch (err) {
-      console.error('Navbar: Logout error:', err.message);
+      console.error("Navbar: Logout error:", err.message);
     }
   };
 
-  const navVariants = {
-    open: { opacity: 1, height: 'auto' },
-    closed: { opacity: 0, height: 0 },
+  const handleMouseEnter = () => {
+    // Clear any existing timeout to prevent premature closing
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
+    }
+    setIsProfileOpen(true);
   };
 
-  const isAuthenticated = user && user.emailVerified;
+  const handleMouseLeave = () => {
+    // Set a timeout to close the dropdown after 300ms
+    timeoutRef.current = setTimeout(() => {
+      setIsProfileOpen(false);
+    }, 300);
+  };
+
+  const handleDropdownMouseEnter = () => {
+    // Keep dropdown open when mouse is over the dropdown
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
+    }
+  };
 
   return (
-    <nav className="bg-tech-dark border-b border-tech-neon/20">
-      <div className="container mx-auto p-4 flex justify-between items-center">
-        <Link to="/" className="text-2xl font-bold text-tech-neon">
-          IgniteVault
-        </Link>
-        <button
-          className="md:hidden text-tech-light focus:outline-none"
-          onClick={() => setIsOpen(!isOpen)}
-          aria-label="Toggle menu"
-        >
-          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth="2"
-              d={isOpen ? 'M6 18L18 6M6 6l12 12' : 'M4 6h16M4 12h16M4 18h16'}
-            />
-          </svg>
-        </button>
-        <div className="hidden md:flex space-x-4">
-          <Link to="/projects" className="text-tech-light hover:text-tech-neon">
-            Projects
-          </Link>
-          <Link to="/hackathons" className="text-tech-light hover:text-tech-neon">
-            Hackathons
-          </Link>
-          <Link to="/prototypes" className="text-tech-light hover:text-tech-neon">
-            Prototypes
-          </Link>
-          <Link to="/courses" className="text-tech-light hover:text-tech-neon">
-            Courses
-          </Link>
-          {isAuthenticated ? (
-            <>
-              <Link to="/profile" className="text-tech-light hover:text-tech-neon">
-                Profile
-              </Link>
-              <button
-                onClick={handleLogout}
-                className="text-tech-light hover:text-red-500"
-                aria-label="Logout"
+    <motion.nav
+      initial={{ y: -50, opacity: 0 }}
+      animate={{ y: 0, opacity: 1 }}
+      transition={{ duration: 0.5 }}
+      className="bg-tech-gray text-tech-light p-4 flex justify-between items-center shadow-lg border-b border-tech-neon/20"
+    >
+      <Link to="/" className="text-2xl font-bold tracking-tight text-tech-neon">College Startup Platform</Link>
+      <div className="flex space-x-6 items-center">
+        <Link to="/" className="hover:text-tech-neon transition">Home</Link>
+        <Link to="/projects" className="hover:text-tech-neon transition">Projects</Link>
+        <Link to="/hackathons" className="hover:text-tech-neon transition">Hackathons</Link>
+        <Link to="/prototypes" className="hover:text-tech-neon transition">Prototypes</Link>
+        <Link to="/courses" className="hover:text-tech-neon transition">Courses</Link>
+        {user ? (
+          <div
+            className="relative"
+            onMouseEnter={handleMouseEnter}
+            onMouseLeave={handleMouseLeave}
+          >
+            <span className="hover:text-tech-neon transition cursor-pointer">Profile</span>
+            {isProfileOpen && (
+              <motion.div
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.2 }}
+                className="absolute right-0 mt-2 w-48 bg-tech-gray border border-tech-neon/20 rounded-lg shadow-lg z-10"
+                onMouseEnter={handleDropdownMouseEnter}
+                onMouseLeave={handleMouseLeave}
               >
-                Logout
-              </button>
-            </>
-          ) : (
-            <Link to="/login" className="text-tech-light hover:text-tech-neon">
-              Login
-            </Link>
-          )}
-        </div>
+                <Link
+                  to="/profile"
+                  className="block px-4 py-2 text-tech-light hover:bg-tech-blue hover:text-white transition"
+                >
+                  View Profile
+                </Link>
+                <button
+                  onClick={handleLogout}
+                  className="block w-full text-left px-4 py-2 text-tech-light hover:bg-red-600 hover:text-white transition"
+                  aria-label="Logout"
+                >
+                  Logout
+                </button>
+              </motion.div>
+            )}
+          </div>
+        ) : (
+          <>
+            <Link to="/login" className="hover:text-tech-neon transition">Login</Link>
+            <Link to="/signup" className="hover:text-tech-neon transition">Sign Up</Link>
+          </>
+        )}
       </div>
-      <motion.div
-        className="md:hidden overflow-hidden"
-        initial="closed"
-        animate={isOpen ? 'open' : 'closed'}
-        variants={navVariants}
-        transition={{ duration: 0.3 }}
-      >
-        <div className="flex flex-col space-y-2 p-4">
-          <Link to="/projects" className="text-tech-light hover:text-tech-neon" onClick={() => setIsOpen(false)}>
-            Projects
-          </Link>
-          <Link to="/hackathons" className="text-tech-light hover:text-tech-neon" onClick={() => setIsOpen(false)}>
-            Hackathons
-          </Link>
-          <Link to="/prototypes" className="text-tech-light hover:text-tech-neon" onClick={() => setIsOpen(false)}>
-            Prototypes
-          </Link>
-          <Link to="/courses" className="text-tech-light hover:text-tech-neon" onClick={() => setIsOpen(false)}>
-            Courses
-          </Link>
-          {isAuthenticated ? (
-            <>
-              <Link to="/profile" className="text-tech-light hover:text-tech-neon" onClick={() => setIsOpen(false)}>
-                Profile
-              </Link>
-              <button
-                onClick={handleLogout}
-                className="text-tech-light hover:text-red-500 text-left"
-                aria-label="Logout"
-              >
-                Logout
-              </button>
-            </>
-          ) : (
-            <Link to="/login" className="text-tech-light hover:text-tech-neon" onClick={() => setIsOpen(false)}>
-              Login
-            </Link>
-          )}
-        </div>
-      </motion.div>
-    </nav>
+    </motion.nav>
   );
 }
 

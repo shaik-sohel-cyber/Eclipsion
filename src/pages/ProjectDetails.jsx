@@ -1,13 +1,15 @@
 import { useEffect, useState } from 'react';
-import { useParams, Navigate, Link } from 'react-router-dom';
+import { useParams, Navigate, Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { db, auth } from '../firebase';
-import { doc, getDoc, updateDoc } from 'firebase/firestore';
+import { db } from '../firebase';
+import { doc, getDoc, updateDoc, deleteDoc } from 'firebase/firestore';
 import { useAuth } from '../context/AuthContext';
 
 function ProjectDetails() {
   const { id } = useParams();
   const { user } = useAuth();
+  const navigate = useNavigate();
+
   const [project, setProject] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -15,7 +17,6 @@ function ProjectDetails() {
   useEffect(() => {
     const fetchProject = async () => {
       try {
-        console.log('ProjectDetails: Fetching project:', id);
         const projectDoc = await getDoc(doc(db, 'projects', id));
         if (projectDoc.exists()) {
           setProject({
@@ -39,12 +40,12 @@ function ProjectDetails() {
         setLoading(false);
       }
     };
+
     fetchProject();
   }, [id]);
 
   const handleJoinProject = async () => {
     if (!user || !user.emailVerified || !user.uid) {
-      console.log('ProjectDetails: Redirecting to login, no user or unverified');
       return <Navigate to="/login" />;
     }
 
@@ -59,7 +60,6 @@ function ProjectDetails() {
         return;
       }
 
-      console.log('ProjectDetails: Joining project:', id);
       await updateDoc(doc(db, 'projects', id), {
         team: [...(project.team || []), user.uid]
       });
@@ -76,12 +76,10 @@ function ProjectDetails() {
 
   const handleLeaveProject = async () => {
     if (!user || !user.emailVerified || !user.uid) {
-      console.log('ProjectDetails: Redirecting to login, no user or unverified');
       return <Navigate to="/login" />;
     }
 
     try {
-      console.log('ProjectDetails: Leaving project:', id);
       await updateDoc(doc(db, 'projects', id), {
         team: project.team.filter(member => member !== user.uid)
       });
@@ -96,8 +94,25 @@ function ProjectDetails() {
     }
   };
 
+  const handleDeleteProject = async () => {
+    const confirmDelete = window.confirm('Are you sure you want to delete this project? This action cannot be undone.');
+
+    if (!confirmDelete) return;
+
+    try {
+      await deleteDoc(doc(db, 'projects', project.id));
+      await updateDoc(doc(db, 'users', user.uid), {
+        [`createdProjects.${project.id}`]: false
+      });
+      alert('Project deleted successfully.');
+      navigate('/projects');
+    } catch (err) {
+      console.error('ProjectDetails: Delete error:', err.message);
+      setError('Failed to delete project: ' + err.message);
+    }
+  };
+
   if (!user || !user.emailVerified) {
-    console.log('ProjectDetails: Redirecting to login, no user or unverified');
     return <Navigate to="/login" />;
   }
 
@@ -146,42 +161,53 @@ function ProjectDetails() {
         <p className="text-tech-light mb-2"><strong>Creator:</strong> {project.creatorName}</p>
         <p className="text-tech-light mb-2"><strong>Team:</strong> {project.team.length > 0 ? project.team.length + ' members' : 'No team members'}</p>
         <p className="text-tech-light mb-4"><strong>Status:</strong> {project.status}</p>
-        <div className="flex space-x-4">
+
+        <div className="flex flex-wrap gap-4">
           {!isCreator && !isTeamMember && project.status === 'active' && (
             <motion.button
-              whileHover={{ scale: 1.05, boxShadow: '0 0 10px rgba(0, 229, 255, 0.5)' }}
+              whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
               onClick={handleJoinProject}
               className="bg-tech-blue text-white rounded-lg px-4 py-2 font-semibold hover:bg-blue-700 transition"
-              aria-label="Join Project"
             >
               Join Project
             </motion.button>
           )}
+
           {isTeamMember && !isCreator && (
             <motion.button
-              whileHover={{ scale: 1.05, boxShadow: '0 0 10px rgba(0, 229, 255, 0.5)' }}
+              whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
               onClick={handleLeaveProject}
               className="bg-red-600 text-white rounded-lg px-4 py-2 font-semibold hover:bg-red-700 transition"
-              aria-label="Leave Project"
             >
               Leave Project
             </motion.button>
           )}
+
           {isCreator && (
-            <Link
-              to={`/projects/edit/${project.id}`}
-              className="bg-yellow-600 text-white rounded-lg px-4 py-2 font-semibold hover:bg-yellow-700 transition"
-              aria-label="Edit Project"
-            >
-              Edit Project
-            </Link>
+            <>
+              <Link
+                to={`/projects/edit/${project.id}`}
+                className="bg-yellow-600 text-white rounded-lg px-4 py-2 font-semibold hover:bg-yellow-700 transition"
+              >
+                Edit Project
+              </Link>
+
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                onClick={handleDeleteProject}
+                className="bg-red-600 text-white rounded-lg px-4 py-2 font-semibold hover:bg-red-700 transition"
+              >
+                Delete Project
+              </motion.button>
+            </>
           )}
+
           <Link
             to={`/prototypes/upload/${project.id}`}
             className="bg-tech-blue text-white rounded-lg px-4 py-2 font-semibold hover:bg-blue-700 transition"
-            aria-label="Upload Prototype"
           >
             Upload Prototype
           </Link>
