@@ -15,7 +15,7 @@ function Footer() {
         {/* Copyright */}
         <div className="mb-4 md:mb-0">
           <p className="text-sm">
-            &copy; {currentYear} College Startup Platform. All rights reserved.
+            &copy; {currentYear} IgniVault. All rights reserved.
           </p>
         </div>
 

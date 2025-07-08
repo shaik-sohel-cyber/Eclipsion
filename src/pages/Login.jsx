@@ -4,4 +4,4 @@ function Login() {
   return <AuthForm type="login" />;
 }
 
-export default Login;
+export default Login; 
